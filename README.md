@@ -27,8 +27,9 @@ Temporary files
 - hash join  
 
 # EDB Repository Token
-To install EPAS you need an access to EDB Repository.  
-It is free, you can go to https://www.enterprisedb.com/docs/repos/to read how to do.
+To install EPAS you need an access to EDB Repository.   
+It is free, you can go to https://www.enterprisedb.com/docs/repos/to read how to do.  
+Create a file named .edbtoken and past your key into it  
 
 ## Demo (10'-15')
 
@@ -58,24 +59,48 @@ vault read transit/keys/pg-tde-master-2
 5 - EPAS 17 setup with TDE using KEK to wrap DEK
 ```
 export VAULT_ADDR="http://192.168.56.20:8200"
+```
+```
 vault login root
+```
+```
 export PGDATAKEYWRAPCMD='base64 | vault write -field=ciphertext transit/encrypt/pg-tde-master-1 plaintext=- > %p'
+```
+```
 export PGDATAKEYUNWRAPCMD='vault write -field=plaintext transit/decrypt/pg-tde-master-1 ciphertext=- < %p | base64 -d'
+```
+```
 export PGPORT=5446
 /usr/edb/as17/bin/initdb -D data-encrypted/ --data-encryption=256
 /usr/edb/as17/bin/pg_ctl -D /var/lib/edb/as16/data-encrypted/ -l logfile start
+```
+```
 ps -ef | grep postgres
+```
+```
 ps eww -p 6912 | tr ' ' '\n' | grep PGDATAKEY
 ```
 6 - Create data and see encrypted data inside file system in EPAS 17 deployment 
 
 ```
 psql -d postgres
+```
+```
 create table customer(id int, name varchar(20), credit_card char(16));
+```
+```
 insert into customer values (1, 'Raphael', 'myCreditCard');
+```
+```
 insert into customer values (2, 'Raphael', 'myCreditCard');
+```
+```
 checkpoint;
+```
+```
 select * from customer;
+```
+```
 select pg_relation_filepath('customer');
 \! hexdump -C 'base/5/16396'
 ```
